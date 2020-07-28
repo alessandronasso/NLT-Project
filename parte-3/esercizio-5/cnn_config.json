@@ -1,0 +1,23 @@
+{
+    "cnn_config": {
+        "max_sequence_length": 350,
+        "num_dimensions": 300,
+        "filter_sizes": [2, 3],
+        "num_filters": 64,
+        "dropout_keep_prob": 0.5,
+        "l2_lambda": 0.05
+    },
+    "training_config": {
+        "learning_rate": 0.002,
+        "batch_size": 32,
+        "iterations": 50,
+        "max_grad_norm": 2,
+        "train_on_gpu": true,
+        "dataset_path": "bbc",
+        "train_set_ratio": 0.85,
+        "input_noise": false
+    },
+    "other_config": {
+        "logdir": "./logdir"
+    }
+}
