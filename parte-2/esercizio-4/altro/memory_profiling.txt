@@ -1,0 +1,76 @@
+BASELINE MULTI-TUPLE:       11174199 -  99.9 MB
+SINGLE COL TUPLE OF TUPLE:   3742559 - 100.8 MB
+MULTI-LIST:                 30015231 - 118.4 MB
+PAIR CLASS:                  9604191 - 119.6 MB
+SLOTS PAIR CLASS:            9604191 -  98.4 MB
+SPLIT INTO 2 COLUMNS:       26579070 -  92.8 MB
+SPLIT 2 COL CONV FLOAT:     15885953 -  83.7 MB
+NO STRING SPLIT:            15536877 -  78.3 MB
+
+-- nasari big --
+
+NO STRING SPLIT:                        3732 MB
+
+-- nasari chunked load big n=250k --
+
+BASELINE MULTI-TUPLE:                   9161 MB
+SPLIT 2 COL CONV FLOAT:                 4571 MB    (nota: +lento)
+SLOTS PAIR CLASS:                       8743 MB
+SLOTS PAIR CLASS CONV FLOAT:            8704 MB    (nota: +lento)
+NO STRING SPLIT:                        3064 MB
+
+-- nasari un/chunked load big (confronto dimensione chunk)
+NOTA chunked usa low_memory=False
+NOTA DIM = 15
+
+NOME TEST                              PICCO MEMORIA    MEM FINALE     MEM GC COLLECT   TEMPO
+NO STRING SPLIT (unchunked):                 3900 MB       3746 MB            3173 MB    20 s
+SPLIT 2 COL CONV FLOAT (unchunked):          6500 MB       5615 MB            5040 MB   158 s
+NO STRING SPLIT (chunk=125k):                5300 MB       3824 MB            3490 MB   111 s
+NO STRING SPLIT (chunk=250k):                4700 MB       3550 MB            3450 MB    70 s
+NO STRING SPLIT (chunk=500k):                5800 MB       4100 MB            3450 MB    51 s
+SPLIT 2 COL CONV FLOAT (chunk=250k):         5000 MB       4570 MB            4550 MB   177 s
+
+NOTA ULTERIORE:
+In NASARI BIG dalla colonna con indice 9 in poi ci sono pochissimi valori, si potrebbe troncare alla ottava
+
+NOME TEST                              PICCO MEMORIA    MEM FINALE     MEM GC COLLECT   TEMPO
+NO STRING SPLIT (unchunked DIM=9)            3500 MB       3410 MB            2950 MB    19 s
+SPLIT 2 COL CONV FLOAT (unc. lm=F DIM=9):    4700 MB       4130 MB            3570 MB   116 s
+SPLIT 2 COL CONV FLOAT (unchunked DIM=9):    4600 MB       4130 MB            3670 MB   107 s
+SPLIT 2 COL CONV FLOAT (chunk=250k DIM=9):   3400 MB       3060 MB            3060 MB   122 s
+
+TEST PICKLE (SPLIT 2 COL CONV FLOAT (chunk=250k DIM=9))
+NOME TEST                   DATASET RAM SIZE   DATASET DISK SIZE  PICCO MEMORIA    MEM FINALE     MEM GC COLLECT   TEMPO
+DUMP:                                3058 MB              980 MB        5800 MB       3077 MB            3077 MB    25 s
+LOAD:                                 N/A MB              980 MB        3800 MB       3024 MB            3024 MB     6 s
+
+PROVA FLOAT32 invece di FLOAT64
+NOME TEST                                      PICCO MEMORIA    MEM FINALE     MEM GC COLLECT   TEMPO
+SPLIT 2 COL CONV FLOAT32 (chunk=250k DIM=9):         3100 MB       2950 MB            2930 MB   119 s     (con leggeri errori di arrotondamento)
+
+-------------------------------------------------------------------------------------------
+PROVA CODICE (forse) FINALE
+METODO: SPLIT 2 COL CONV FLOAT (chunk=250k DIM=9) con PICKLE
+
+NOME TEST                   DATASET DISK SIZE  PICCO MEMORIA    MEM FINALE     MEM GC COLLECT   TEMPO
+LOAD & PICKLE DUMP:                    980 MB        5700 MB       3088 MB            3078 MB   145 s
+PICKLE LOAD:                           980 MB        3800 MB       3024 MB            3024 MB     7 s
+
+-------------------------------------------------------------------------------------------
+TEST SORT LOADED DATA
+code: nasari = nasari.set_index('Name').sort_index()
+
+NOME TEST                                   DATASET RAM SIZE  PICCO MEMORIA    MEM FINALE     MEM GC COLLECT   TEMPO
+SPLIT 2 COL CONV FLOAT (chunk=250k DIM=9)            3027 MB        4200 MB       3570 MB            3570 MB    13 s
+
+
+-------------------------------------------------------------------------------------------
+PROVA CODICE (forse) FINALE
+METODO: SPLIT 2 COL CONV FLOAT (chunk=250k DIM=9) con PICKLE (Versione indicizzata ed ordinata in base a colonna 'Name')
+
+NOME TEST                   DATASET DISK SIZE  PICCO MEMORIA    MEM FINALE     MEM GC COLLECT   TEMPO
+LOAD & PICKLE DUMP:                    977 MB        5620 MB       3060 MB            3048 MB   165 s
+PICKLE LOAD:                           977 MB        3800 MB       2997 MB            2997 MB     7 s
+
+NOTA: Questa versione dovrebbe ridurre di 13 secondi i tempi di esecuzione dell'algoritmo (con pickle load)
